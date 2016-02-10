@@ -1,0 +1,24 @@
+{
+  "name": "lookoutjs",
+  "version": "0.0.1",
+  "description": "A tiny observable library in JS.",
+  "main": "dist/index.js",
+  "scripts": {
+    "start": "watch 'npm run build' .",
+    "build": "umd index.js src/lookout.js dist/index.js",
+    "package": "umd index.js src/lookout.js | uglifyjs > dist/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/estrattonbailey/lookoutjs"
+  },
+  "author": "estrattonbailey",
+  "license": "MIT",
+  "devDependencies": {
+    "uglify-js": "^2.6.1",
+    "umd": "^3.0.1",
+    "watch": "^0.17.1"
+  },
+  "keywords": "observable, watch, object.observe, object oriented, object, object observe"
+}

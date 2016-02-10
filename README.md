@@ -1,7 +1,7 @@
 # Lookout.js (WIP)
 *A tiny observable library in JS using native ES5 getters and setters. 428b minified and gzipped, so far.*
 
-This library is a work in progress. As of v0.0.1, specifying observing objects is limited to one 'level' deep.
+This library is a work in progress. As of v0.0.1, specifying observing objects is limited to one 'level' deep, and it won't actually set a property more than once.
 
 ## Todo
 1. Allow watching of nested object properties i.e. `Lookout.watch('user.meta', function(){})`.

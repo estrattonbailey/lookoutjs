@@ -15,39 +15,66 @@ var proto = {
 	},
   // run all callbacks in specific queue
 	publish: function(key, val){
+    if (!this.listeners[key]) return;
+
 		this.listeners[key].queue.forEach(function(fn, i){
 			fn(val);
 		});
 	}
 }
 
+function deepSet(source, target, key, keys){
+  keys.forEach(function(k){
+    target[key][k] = source[key][k];
+
+    Object.defineProperty(target[key], k, { 
+      set: function(val){ 
+        Object.defineProperty(this, k, {
+          value: val
+        });
+
+        target.publish(k, val);
+      },
+      get: function(){
+        return source[key][k]
+      }
+    });
+  });
+}
 /**
  * Create blank object with proto methods.
  * Create getters and setters for each property.
  * Setter fires this.publish() callback function.
  * @param {object} obj Any object the user wants to create
  */
-function Lookout(obj){
-	var _o = Object.create(proto);
+function Lookout(source){
+  var children,
+      target = Object.create(proto);
 	
-	Object.keys(obj).forEach(function(key){
-		_o[key] = obj[key];
+	Object.keys(source).forEach(function(key){
+		target[key] = source[key];
+
+    children = source[key];
 		
-		Object.defineProperty(_o, key, { 
+		Object.defineProperty(target, key, { 
 			set: function(val){ 
 				Object.defineProperty(this, key, {
-					value: val
+          value: val
 				});
-				
+
 				this.publish(key, val);
 			},
 			get: function(){
-        return obj[key]
+        return source[key]
 			}
 		});
+
+    if (typeof children === 'object'){
+      deepSet(source, target, key, Object.keys(children));  
+    }
 	});
 	
-	return _o;
+	return target;
 }
 
 return Lookout;

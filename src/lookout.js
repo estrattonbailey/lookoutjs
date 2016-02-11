@@ -1,3 +1,5 @@
+var isObj = require('is-plain-object');
+
 var proto = {
   // cache of callback functions
 	listeners: {},
@@ -15,6 +17,7 @@ var proto = {
 	},
   // run all callbacks in specific queue
 	publish: function(key, val){
+    console.log(key)
     if (!this.listeners[key]) return;
 
 		this.listeners[key].queue.forEach(function(fn, i){
@@ -24,23 +27,24 @@ var proto = {
 }
 
 function deepSet(source, target, key, keys){
-  keys.forEach(function(k){
-    target[key][k] = source[key][k];
+  // console.log(target)
+	keys.forEach(function(k){
+    // console.log(target.props[key][k])
+		Object.defineProperty(target[key], k, { 
+			set: function(val){ 
+        console.log(k)
+        console.log(target.props[key])
+        target.props[key][k] = val;
 
-    Object.defineProperty(target[key], k, { 
-      set: function(val){ 
-        Object.defineProperty(this, k, {
-          value: val
-        });
-
-        target.publish(k, val);
-      },
-      get: function(){
-        return source[key][k]
-      }
-    });
+				this.publish(key, val);
+			},
+			get: function(){
+        return target.props[key][k]
+			}
+		});
   });
 }
+
 /**
  * Create blank object with proto methods.
  * Create getters and setters for each property.
@@ -48,29 +52,35 @@ function deepSet(source, target, key, keys){
  * @param {object} obj Any object the user wants to create
  */
 function Lookout(source){
-  var children,
-      target = Object.create(proto);
+  var target,
+      childObj,
+      childObjKeys;
+  
+  if (!isObj(source)) return console.log('%cPassed parameter ('+source+') is not an object.', 'background-color:#ff4567;color:#333333');
+  
+  target = Object.create(proto, {
+    props: {
+      value: source 
+    }
+  });
 	
 	Object.keys(source).forEach(function(key){
-		target[key] = source[key];
-
-    children = source[key];
-		
 		Object.defineProperty(target, key, { 
 			set: function(val){ 
-				Object.defineProperty(this, key, {
-          value: val
-				});
+        this.props[key] = val;
 
 				this.publish(key, val);
 			},
 			get: function(){
-        return source[key]
+        return this.props[key]
 			}
 		});
 
-    if (typeof children === 'object'){
-      deepSet(source, target, key, Object.keys(children));  
+    childObj = isObj(source[key]);
+
+    if (childObj){
+      childObjKeys = Object.keys(source[key]);
+      deepSet(source, target, key, childObjKeys);
     }
 	});
 	

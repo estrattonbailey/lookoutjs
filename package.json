@@ -1,6 +1,6 @@
 {
   "name": "lookoutjs",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "A tiny observable library in JS.",
   "main": "dist/index.js",
   "scripts": {
@@ -20,5 +20,8 @@
     "umd": "^3.0.1",
     "watch": "^0.17.1"
   },
-  "keywords": "observable, watch, object.observe, object oriented, object, object observe"
+  "keywords": "observable, watch, object.observe, object oriented, object, object observe",
+  "dependencies": {
+    "is-plain-object": "^2.0.1"
+  }
 }

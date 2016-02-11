@@ -12,6 +12,9 @@ This library is a work in progress. Currently the observable functionality is li
 
 ## Getting Started
 Lookout is packaged with UMD, so you can include it via `require()` or as a script tag in your markup.
+```bash
+npm i lookoutjs
+```
 ```javascript
 var lookout = require('lookoutjs');
 ```

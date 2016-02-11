@@ -6,29 +6,29 @@ var isObj = require('is-plain-object');
  */
 var proto = {
   // cache of callback functions
-	listeners: {},
+  listeners: {},
   // assigns callbacks to keys on object
-	watch: function(key, cb){
+  watch: function(key, cb){
     var key = key || 'all'; // TODO: write 'all' functionality 
-		
+
     if (!this.listeners[key]){
       this.listeners[key] = {
         queue: []
       };
     }
-		
-		this.listeners[key].queue.push(cb);
-	},
+
+    this.listeners[key].queue.push(cb);
+  },
   // run all callbacks in specific queue
-	publish: function(key, val){
+  publish: function(key, val){
     // if a callback hasn't been specified yet, return
     if (!this.listeners[key]) return;
 
     // run callback with changed value as param
-		this.listeners[key].queue.forEach(function(fn, i){
-			fn(val);
-		});
-	}
+    this.listeners[key].queue.forEach(function(fn, i){
+      fn(val);
+    });
+  }
 }
 
 /**
@@ -40,28 +40,28 @@ var proto = {
  */
 function Lookout(source){
   var target;
-  
+
   if (!isObj(source)) return console.log('%cPassed parameter ('+source+') is not an object.', 'background-color:#ff4567;color:#333333');
-  
+
   target = Object.create(proto, {
     props: {
       value: source 
     }
   });
-	
-	Object.keys(source).forEach(function(key){
-		Object.defineProperty(target, key, { 
-			set: function(val){ 
+
+  Object.keys(source).forEach(function(key){
+    Object.defineProperty(target, key, { 
+      set: function(val){ 
         this.props[key] = val;
-				this.publish(key, val);
-			},
-			get: function(){
+        this.publish(key, val);
+      },
+      get: function(){
         return this.props[key]
-			}
-		});
-	});
-	
-	return target;
+      }
+    });
+  });
+
+  return target;
 }
 
 return Lookout;

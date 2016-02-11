@@ -1,3 +1,5 @@
+var isObj = require('is-plain-object');
+
 var proto = {
   // cache of callback functions
 	listeners: {},
@@ -23,24 +25,6 @@ var proto = {
 	}
 }
 
-function deepSet(source, target, key, keys){
-  keys.forEach(function(k){
-    target[key][k] = source[key][k];
-
-    Object.defineProperty(target[key], k, { 
-      set: function(val){ 
-        Object.defineProperty(this, k, {
-          value: val
-        });
-
-        target.publish(k, val);
-      },
-      get: function(){
-        return source[key][k]
-      }
-    });
-  });
-}
 /**
  * Create blank object with proto methods.
  * Create getters and setters for each property.
@@ -48,30 +32,27 @@ function deepSet(source, target, key, keys){
  * @param {object} obj Any object the user wants to create
  */
 function Lookout(source){
-  var children,
-      target = Object.create(proto);
+  var target;
+  
+  if (!isObj(source)) return console.log('%cPassed parameter ('+source+') is not an object.', 'background-color:#ff4567;color:#333333');
+  
+  target = Object.create(proto, {
+    props: {
+      value: source 
+    }
+  });
 	
 	Object.keys(source).forEach(function(key){
-		target[key] = source[key];
-
-    children = source[key];
-		
 		Object.defineProperty(target, key, { 
 			set: function(val){ 
-				Object.defineProperty(this, key, {
-          value: val
-				});
+        this.props[key] = val;
 
 				this.publish(key, val);
 			},
 			get: function(){
-        return source[key]
+        return this.props[key]
 			}
 		});
-
-    if (typeof children === 'object'){
-      deepSet(source, target, key, Object.keys(children));  
-    }
 	});
 	
 	return target;

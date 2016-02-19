@@ -57,7 +57,8 @@ function Lookout(source){
       },
       get: function(){
         return this.props[key]
-      }
+      },
+      configurable: true
     });
   });
 

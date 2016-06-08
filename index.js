@@ -125,7 +125,14 @@ function set(root, source, key){
     set: function(val){ 
       root.store[key] = val;
 
-      ROOT.publish(getPath(key, val), val);
+      var keypath = getPath(key, val);
+
+      for (var i = 0; i < keypath.split(/\./).length; i++){
+        ROOT.publish(keypath || key, val);
+        if (keypath.match(/\.(?!.*\.)/)){
+          keypath = keypath.substring(0, keypath.match(/\.(?!.*\.)/).index)
+        }
+      }
     },
     get: function(){
       return root.store[key]

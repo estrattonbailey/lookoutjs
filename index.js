@@ -1,22 +1,39 @@
 /**
  * TODO
- * 1. JSDoc
  * 2. console.warn
  * 3. Add whitespace
  * 4. Precompile deps
  * 5. bundleDependencies[]
  */
 
-var ROOT;
-var isObj = require('is-plain-object');
-var traverse = require('traverse');
+/**
+ * Check if object and
+ * not an Array
+ */
+var isObj = require('isobject');
 
 /**
- * Added as a prototype to each 
- * object created with Lookout()
+ * Get keypaths to fire in
+ * this.publish()
+ */
+var getPath = require('object-keypath');
+
+/**
+ * Root object
+ */
+var ROOT;
+
+/**
+ * Create prototype chain for
+ * ROOT object.
+ *
+ * NOTE: properties should be enumerable
  */
 var proto = Object.create({}, {
-  // cache of callback functions
+
+  /**
+   * Cache of callback functions
+   */
   listeners: {
     value: {
       all: {
@@ -25,7 +42,14 @@ var proto = Object.create({}, {
     },
     enumerable: false
   },
-  // assigns callbacks to keys on object
+
+  /**
+   * Assigns callbacks to changes
+   * at a specified keypath
+   *
+   * @param {string} key Full keypath to target key
+   * @param {object} cb Callback function
+   */
   watch: {
     value: function(key, cb){
       key = key === '.' || undefined ? 'all' : key;
@@ -45,7 +69,14 @@ var proto = Object.create({}, {
     },
     enumberable: false
   },
-  // run all callbacks in specific queue
+
+  /**
+   * Run all callbacks at a certain
+   * keypath key in the this.listeners array
+   *
+   * @param {string} key Full keypath to target key
+   * @param {string|object} val Value that changed, passed to callback 
+   */
   publish: {
     value: function(key, val){
       if (this.listeners.all.queue.length > -1){
@@ -66,55 +97,23 @@ var proto = Object.create({}, {
   }
 });
 
-function getPath(key, value){
-  var PATH;
-
-  function join(base, str){
-    return base.match(/./) ? base+'.'+str : str
-  }
-
-  function _traverseDeep(path, obj){ // meta, meta{} 
-    Object.keys(obj).forEach(function(k){
-      if (k === 'store') return;
-
-      if (isObj(obj[k])){
-        _traverseDeep(join(path, k), obj[k]);
-      }
-      else if (k === key && obj[k] === value){
-        PATH = join(path, k) 
-      }
-    })
-  }
-
-  function _traverse(obj){
-    var path = '';
-
-    Object.keys(obj).forEach(function(k){
-      if (k === 'store') return;
-
-      if (isObj(obj[k])){
-        _traverseDeep(k, obj[k]); // meta, meta{}
-      }
-      else if (k === key && obj[k] === value){
-        PATH = join(path, k)
-      }
-      else {
-        PATH = 'all'
-      }
-    });
-  };
-
-  _traverse(ROOT)
-
-  return PATH 
-}
-
+/**
+ * Generate accessors
+ *
+ * @param {object} root Context object
+ * @param {object} srouce Data object
+ * @param {string} key Key to be set
+ */
 function set(root, source, key){
   if (!root.store){
-    root.store = {}
+    Object.defineProperty(root, 'store', {
+      value: {},
+      enumerable: false 
+    })
     root.store[key] = source 
   }
 
+  // Recusively set objects
   if (isObj(source)){
     Object.keys(source).forEach(function(k){
       set(source, source[k], k)
@@ -125,14 +124,19 @@ function set(root, source, key){
     set: function(val){ 
       root.store[key] = val;
 
-      var keypath = getPath(key, val);
+      var keypath = getPath(ROOT, key, val);
 
-      for (var i = 0; i < keypath.split(/\./).length; i++){
-        ROOT.publish(keypath || key, val);
-        if (keypath.match(/\.(?!.*\.)/)){
+      /**
+       * For keypaths, fire callbacks for 
+       * each sub path in case we have
+       * listeners on those keypaths
+       */
+      keypath.split(/\./).forEach(function(path){
+        ROOT.publish(keypath, val);
+        if (keypath.match(/\./)){
           keypath = keypath.substring(0, keypath.match(/\.(?!.*\.)/).index)
         }
-      }
+      })
     },
     get: function(){
       return root.store[key]
@@ -141,12 +145,9 @@ function set(root, source, key){
   });
 }
 
-
 /**
  * Create blank object with proto methods.
- * Set props data bucket equal to passed source object.
- * Create getters and setters for each property.
- * Setter fires this.publish() callback function.
+ *
  * @param {object} source Any object the user wants to create
  */
 function Lookout(source){

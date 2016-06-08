@@ -45,7 +45,7 @@
   },
   "keywords": "observable, watch, object.observe, object oriented, object, object observe",
   "dependencies": {
-    "is-plain-object": "^2.0.1",
-    "traverse": "^0.6.6"
+    "isobject": "^2.1.0",
+    "object-keypath": "0.0.1"
   }
 }

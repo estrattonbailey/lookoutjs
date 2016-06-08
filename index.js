@@ -1,12 +1,4 @@
 /**
- * TODO
- * 2. console.warn
- * 3. Add whitespace
- * 4. Precompile deps
- * 5. bundleDependencies[]
- */
-
-/**
  * Check if object and
  * not an Array
  */

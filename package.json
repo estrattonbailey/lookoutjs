@@ -2,12 +2,28 @@
   "name": "lookoutjs",
   "version": "0.0.6",
   "description": "A tiny observable library in JS.",
-  "main": "dist/index.js",
+  "main": "index.js",
   "scripts": {
-    "start": "watch 'npm run build' .",
-    "build": "umd index.js src/lookout.js dist/index.js",
-    "package": "umd index.js src/lookout.js | uglifyjs > dist/index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "js:umd": "mkdir browser && browserify index.js --standalone Lookout > browser/lookout.js"
+  },
+  "browserify": {
+    "debug": true,
+    "cache": {},
+    "packageCache": {},
+    "extension": [
+      "js"
+    ],
+    "transform": [
+      [
+        "babelify",
+        {
+          "presets": [
+            "es2015",
+            "react"
+          ]
+        }
+      ]
+    ]
   },
   "repository": {
     "type": "git",
@@ -15,10 +31,17 @@
   },
   "author": "estrattonbailey",
   "license": "MIT",
+  "bugs": {
+    "url": ""
+  },
+  "homepage": "",
   "devDependencies": {
-    "uglify-js": "^2.6.1",
-    "umd": "^3.0.1",
-    "watch": "^0.17.1"
+    "babel-preset-es2015": "^6.9.0",
+    "babel-preset-react": "^6.5.0",
+    "babelify": "^7.3.0",
+    "browserify": "^13.0.1",
+    "minifyify": "^7.3.3",
+    "watchify": "^3.7.0"
   },
   "keywords": "observable, watch, object.observe, object oriented, object, object observe",
   "dependencies": {

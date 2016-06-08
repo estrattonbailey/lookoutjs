@@ -7,69 +7,117 @@
  * 5. bundleDependencies[]
  */
 
+var ROOT;
 var isObj = require('is-plain-object');
+var traverse = require('traverse');
 
 /**
  * Added as a prototype to each 
  * object created with Lookout()
  */
-var proto = {
+var proto = Object.create({}, {
   // cache of callback functions
   listeners: {
-    all: {
-      queue: []
-    }
+    value: {
+      all: {
+        queue: []
+      }
+    },
+    enumerable: false
   },
   // assigns callbacks to keys on object
-  watch: function(key, cb){
-    key = key === '.' || undefined ? 'all' : key;
+  watch: {
+    value: function(key, cb){
+      key = key === '.' || undefined ? 'all' : key;
 
-    if (typeof key === 'function'){
-      cb = key
-      key = 'all'
-    }
+      if (typeof key === 'function'){
+        cb = key
+        key = 'all'
+      }
 
-    if (!this.listeners[key]){
-      this.listeners[key] = {
-        queue: []
-      };
-    }
+      if (!this.listeners[key]){
+        this.listeners[key] = {
+          queue: []
+        };
+      }
 
-    this.listeners[key].queue.push(cb);
+      this.listeners[key].queue.push(cb);
+    },
+    enumberable: false
   },
   // run all callbacks in specific queue
-  publish: function(key, val){
-    if (this.listeners.all.queue.length > -1){
-      for (var i = 0; i < this.listeners.all.queue.length; i++){
-        this.listeners.all.queue[i](val);
+  publish: {
+    value: function(key, val){
+      if (this.listeners.all.queue.length > -1){
+        for (var i = 0; i < this.listeners.all.queue.length; i++){
+          this.listeners.all.queue[i](val);
+        }
       }
-    }
 
-    // if a callback hasn't been specified yet, return
-    if (!this.listeners[key]) return;
+      // if a callback hasn't been specified yet, return
+      if (!this.listeners[key]) return;
 
-    // run callback with changed value as param
-    for (var i = 0; i < this.listeners[key].queue.length; i++){
-      this.listeners[key].queue[i](val);
-    }
+      // run callback with changed value as param
+      for (var i = 0; i < this.listeners[key].queue.length; i++){
+        this.listeners[key].queue[i](val);
+      }
+    },
+    enumerable: false
+  }
+});
+
+function set(root, source, key){
+  if (!root.store){
+    root.store = {}
+    root.store[key] = source 
+  }
+
+  if (isObj(source)){
+    Object.keys(source).forEach(function(k){
+      set(source, source[k], k)
+    })
+  } else {
+    Object.defineProperty(root, key, { 
+      set: function(val){ 
+        root.store[key] = val;
+
+        ROOT.publish(getPath(key, val), val);
+      },
+      get: function(){
+        return root.store[key]
+      },
+      configurable: true
+    });
   }
 }
 
-function deepSet(source, target, key, keys){
-  target.store[key].store = {}
+function getPath(key, value){
+  var paths = {};
+  var path;
 
-	keys.forEach(function(k){
-		Object.defineProperty(target[key], k, { 
-			set: function(val){ 
-        target.store[key].store[k] = val;
+  function _traverse(obj, hash){
+    hash = hash || 'root'
 
-				target.publish(key+'.'+k, val);
-			},
-			get: function(){
-        return target.store[key].store[k]
-			}
-		});
-  });
+    paths[hash] = []
+
+    Object.keys(obj).forEach(function(k){
+      if (k === 'store') return;
+
+      if (isObj(obj[k])){
+        paths[hash].push(k)
+        return _traverse(obj[k], k);
+      }
+      else if (k === key && obj[k] === value){
+        paths[hash].push(hash)
+        paths[hash].push(k)
+        path = paths[hash]
+      }
+    });
+  };
+
+  _traverse(ROOT)
+
+  return path.join('.') 
 }
 
 /**
@@ -80,37 +128,23 @@ function deepSet(source, target, key, keys){
  * @param {object} source Any object the user wants to create
  */
 function Lookout(source){
-  var target;
+  if (!isObj(source)) {
+    return console.warn('Passed parameter ('+source+') is not an object.')
+  }
 
-  if (!isObj(source)) return console.log('%cPassed parameter ('+source+') is not an object.', 'background-color:#ff4567;color:#333333');
-
-  target = Object.create(proto, {
+  ROOT = Object.create(proto, {
     store: {
       value: source 
     }
   });
 
-  Object.assign(target, source)
+  Object.assign(ROOT, source)
 
   Object.keys(source).forEach(function(key){
-    if (isObj(source[key])){
-      childObjKeys = Object.keys(source[key]);
-      deepSet(source, target, key, childObjKeys);
-    }
-
-    Object.defineProperty(target, key, { 
-      set: function(val){ 
-        this.store[key] = val;
-        this.publish(key, val);
-      },
-      get: function(){
-        return this.store[key]
-      },
-      configurable: true
-    });
+    set(ROOT, source[key], key)
   });
 
-  return target;
+  return ROOT;
 }
 
 module.exports = Lookout;

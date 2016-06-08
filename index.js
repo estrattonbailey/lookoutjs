@@ -66,31 +66,6 @@ var proto = Object.create({}, {
   }
 });
 
-function set(root, source, key){
-  if (!root.store){
-    root.store = {}
-    root.store[key] = source 
-  }
-
-  if (isObj(source)){
-    Object.keys(source).forEach(function(k){
-      set(source, source[k], k)
-    })
-  } else {
-    Object.defineProperty(root, key, { 
-      set: function(val){ 
-        root.store[key] = val;
-
-        ROOT.publish(getPath(key, val), val);
-      },
-      get: function(){
-        return root.store[key]
-      },
-      configurable: true
-    });
-  }
-}
-
 function getPath(key, value){
   var PATH;
 
@@ -133,6 +108,32 @@ function getPath(key, value){
 
   return PATH 
 }
+
+function set(root, source, key){
+  if (!root.store){
+    root.store = {}
+    root.store[key] = source 
+  }
+
+  if (isObj(source)){
+    Object.keys(source).forEach(function(k){
+      set(source, source[k], k)
+    })
+  }
+
+  Object.defineProperty(root, key, { 
+    set: function(val){ 
+      root.store[key] = val;
+
+      ROOT.publish(getPath(key, val), val);
+    },
+    get: function(){
+      return root.store[key]
+    },
+    configurable: true
+  });
+}
+
 
 /**
  * Create blank object with proto methods.

@@ -92,32 +92,46 @@ function set(root, source, key){
 }
 
 function getPath(key, value){
-  var paths = {};
-  var path;
+  var PATH;
 
-  function _traverse(obj, hash){
-    hash = hash || 'root'
+  function join(base, str){
+    return base.match(/./) ? base+'.'+str : str
+  }
 
-    paths[hash] = []
+  function _traverseDeep(path, obj){ // meta, meta{} 
+    Object.keys(obj).forEach(function(k){
+      if (k === 'store') return;
+
+      if (isObj(obj[k])){
+        _traverseDeep(join(path, k), obj[k]);
+      }
+      else if (k === key && obj[k] === value){
+        PATH = join(path, k) 
+      }
+    })
+  }
+
+  function _traverse(obj){
+    var path = '';
 
     Object.keys(obj).forEach(function(k){
       if (k === 'store') return;
 
       if (isObj(obj[k])){
-        paths[hash].push(k)
-        return _traverse(obj[k], k);
+        _traverseDeep(k, obj[k]); // meta, meta{}
       }
       else if (k === key && obj[k] === value){
-        paths[hash].push(hash)
-        paths[hash].push(k)
-        path = paths[hash]
+        PATH = join(path, k)
+      }
+      else {
+        PATH = 'all'
       }
     });
   };
 
   _traverse(ROOT)
 
-  return path.join('.') 
+  return PATH 
 }
 
 /**

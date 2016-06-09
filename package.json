@@ -22,6 +22,6 @@
   "keywords": "observable, watch, object.observe, object oriented, object, object observe",
   "dependencies": {
     "isobject": "^2.1.0",
-    "object-keypath": "0.0.1"
+    "object-keypath": "0.0.2"
   }
 }

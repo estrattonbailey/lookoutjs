@@ -16,6 +16,19 @@ var getPath = require('object-keypath');
 var ROOT;
 
 /**
+ * Debounce default listener
+ *
+ * @param {array} listeners Array of listener functions
+ * @param {object} val Full lookout object
+ */
+var debounce;
+function sendUpdate(listeners, val){
+  for (var i = 0; i < listeners.length; i++){
+    listeners[i](val);
+  }
+}
+
+/**
  * Create prototype chain for
  * ROOT object.
  *
@@ -71,18 +84,17 @@ var proto = Object.create({}, {
    */
   publish: {
     value: function(key, val){
-      if (this.listeners.all.queue.length > -1){
-        for (var i = 0; i < this.listeners.all.queue.length; i++){
-          this.listeners.all.queue[i](val);
-        }
-      }
-
       // if a callback hasn't been specified yet, return
       if (!this.listeners[key]) return;
 
       // run callback with changed value as param
       for (var i = 0; i < this.listeners[key].queue.length; i++){
         this.listeners[key].queue[i](val);
+      }
+
+      if (this.listeners.all.queue.length > -1){
+        clearTimeout(debounce)
+        debounce = setTimeout(sendUpdate.bind(this, this.listeners.all.queue, this), 50)
       }
     },
     enumerable: false

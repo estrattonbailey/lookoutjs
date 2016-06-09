@@ -4,10 +4,8 @@
 This library is a work in progress. Currently the observable functionality is limited to the first 'level' of an object, meaning nested properties do not have discrete watch functionality. It's up for debate whether it should support nesting of properties or not.
 
 ## Todo
-1. Allow watching of nested object properties i.e. `Lookout.watch('user.meta', function(){})`.
-2. Add test.
-3. Browser testing (should be clear back to at least IE9, it's all ES5).
-4. Add/remove functionality?
+1. Add test.
+2. Add/remove functionality?
   - Since the objects are probably used to store state and value data, the need for this may be out of scope, since a user should simply define those properties when creating the Lookout object. 
 
 ## Getting Started

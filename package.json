@@ -1,7 +1,7 @@
 {
   "name": "lookoutjs",
-  "version": "0.1.0",
-  "description": "A tiny observable library in JS.",
+  "version": "0.0.7",
+  "description": "A tiny observable library in JS. WIP.",
   "main": "index.js",
   "scripts": {
     "js:umd": "mkdir browser && browserify index.js --standalone Lookout > browser/lookout.js"

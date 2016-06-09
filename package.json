@@ -1,6 +1,6 @@
 {
   "name": "lookoutjs",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "description": "A tiny observable library in JS. WIP.",
   "main": "index.js",
   "scripts": {

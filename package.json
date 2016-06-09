@@ -35,14 +35,7 @@
     "url": ""
   },
   "homepage": "",
-  "devDependencies": {
-    "babel-preset-es2015": "^6.9.0",
-    "babel-preset-react": "^6.5.0",
-    "babelify": "^7.3.0",
-    "browserify": "^13.0.1",
-    "minifyify": "^7.3.3",
-    "watchify": "^3.7.0"
-  },
+  "devDependencies": {},
   "keywords": "observable, watch, object.observe, object oriented, object, object observe",
   "dependencies": {
     "isobject": "^2.1.0",
